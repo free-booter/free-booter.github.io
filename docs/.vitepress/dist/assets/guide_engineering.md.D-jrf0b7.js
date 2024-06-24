@@ -1,0 +1,1 @@
+import{_ as e,c as n,o as t}from"./chunks/framework.BF07aIsw.js";const _=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"guide/engineering.md","filePath":"guide/engineering.md"}'),r={name:"guide/engineering.md"};function i(a,o,s,c,d,g){return t(),n("div")}const m=e(r,[["render",i]]);export{_ as __pageData,m as default};

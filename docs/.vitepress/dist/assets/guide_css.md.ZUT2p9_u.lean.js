@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as s}from"./chunks/framework.BF07aIsw.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"guide/css.md","filePath":"guide/css.md"}'),a={name:"guide/css.md"};function c(r,o,n,d,i,p){return s(),t("div")}const f=e(a,[["render",c]]);export{m as __pageData,f as default};

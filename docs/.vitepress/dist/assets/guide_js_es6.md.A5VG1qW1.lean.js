@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as s}from"./chunks/framework.BF07aIsw.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"guide/js/es6.md","filePath":"guide/js/es6.md"}'),a={name:"guide/js/es6.md"};function r(o,c,n,d,i,p){return s(),t("div")}const f=e(a,[["render",r]]);export{m as __pageData,f as default};
