@@ -23,53 +23,77 @@ export default {
         {
           items: [
             { text: 'HTML', link: '/guide/' },
-            { text: 'CSS', link: '/guide/css' },
+            {
+              text: 'CSS', collapsed: false,
+              items: [
+                { text: '盒子模型', link: '/guide/css/' },
+                { text: '对BFC的理解', link: '/guide/css/bfc' },
+              ]
+            },
             {
               text: 'JavaScript', collapsed: false,
               items: [
                 { text: '基础', link: '/guide/js/' },
+                { text: '事件流', link: '/guide/js/event' },
                 { text: 'ES6', link: '/guide/js/es6' },
                 { text: 'Promise', link: '/guide/js/promise' },
                 { text: '执行上下文', link: '/guide/js/exc' },
+                { text: '原型链', link: '/guide/js/prototype' },
+              ]
+            },
+            {
+              text: 'TypeScript', collapsed: false,
+              items: [
+                { text: 'keyof', link: '/guide/typescript/keyof' },
               ]
             },
             { text: '工程化', link: '/guide/engineering' },
             { text: '网络', link: '/guide/network' },
-          ]
-        }
-      ],
-      '/share/':[
-        {
-          items: [
-            {text: '技术实践', collapsed: false,
-              items: [
-                { text: '网页生成截图', link: '/share/technique/'  }
-              ]
-            },
-            {text: 'Vue源码分析', collapsed: false,
-              items: [
-                { text: '网页生成截图', link: '/share/vue/'  }
-              ]
-            },
-            {text: 'React源码分析', collapsed: false,
-              items: [
-                { text: '网页生成截图', link: '/share/react/'  }
+            {
+              text: '工具方法', collapsed: false, items: [
+                { text: '常用方法', link: '/guide/utils/' }
               ]
             },
           ]
         }
       ],
-      '/interview/':[
+      '/share/': [
         {
           items: [
-            { text: 'Vue', collapsed: false,
+            {
+              text: '技术实践', collapsed: false,
               items: [
-                { text: '对MVVM的理解', link: '/interview/vue/'  },
+                { text: '网页生成截图', link: '/share/technique/' },
+                { text: '大文件上传', link: '/share/technique/fileUpload' },
+              ]
+            },
+            {
+              text: 'Vue源码分析', collapsed: false,
+              items: [
+                { text: 'nextTick', link: '/share/vue/' }
+              ]
+            },
+            {
+              text: 'React源码分析', collapsed: false,
+              items: [
+                { text: '网页生成截图', link: '/share/react/' }
+              ]
+            },
+          ]
+        }
+      ],
+      '/interview/': [
+        {
+          items: [
+            {
+              text: 'Vue', collapsed: false,
+              items: [
+                { text: '对MVVM的理解', link: '/interview/vue/' },
                 { text: '对Vue的理解', link: '/interview/vue/vue' },
                 { text: '对生命周期的理解', link: '/interview/vue/lifecycle' }
               ]
             },
-            
+
           ]
         }
       ]
