@@ -35,10 +35,12 @@ export default {
               items: [
                 { text: '基础', link: '/guide/js/' },
                 { text: '事件流', link: '/guide/js/event' },
+                { text: 'this指向', link: '/guide/js/this' },
                 { text: 'ES6', link: '/guide/js/es6' },
                 { text: 'Promise', link: '/guide/js/promise' },
                 { text: '执行上下文', link: '/guide/js/exc' },
                 { text: '原型链', link: '/guide/js/prototype' },
+                { text: 'Class', link: '/guide/js/class' },
               ]
             },
             {
@@ -70,7 +72,23 @@ export default {
             {
               text: 'Vue源码分析', collapsed: false,
               items: [
-                { text: 'nextTick', link: '/share/vue/' }
+                {
+                  text: '学习路线', link: '/share/vue/'
+                },
+                {
+                  text: '响应式系统', collapsed: false, items: [
+                    {
+                      text: 'proxy', link: '/share/vue/reactivity/proxy'
+                    },
+                    {
+                      text: 'ref', link: '/share/vue/reactivity/ref'
+                    },
+                    {
+                      text: 'reactive', link: '/share/vue/reactivity/reactive'
+                    },
+                  ]
+                },
+                { text: 'nextTick', link: '/share/vue/nextTick' },
               ]
             },
             {
