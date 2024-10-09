@@ -4,7 +4,7 @@
 
 ## 例子 🌰
 
-### ref 解包
+### 解包
 
 ```js
 const counts = ref(0);
@@ -20,7 +20,7 @@ obj.counts = counts;
 console.log(obj.counts); // 1
 ```
 
-### ref 不执行解包
+### 不执行解包
 
 ```js
 const title = ref("Vue 3 Guide");
@@ -40,6 +40,111 @@ console.log(people[0].value);
 - 当访问到某个响应式数组或 `Map` 这样的原生集合类型中的 `ref` 元素时，不会执行解包
 
 **官网：** https://cn.vuejs.org/api/reactivity-core.html#reactive
+
+## 手写
+
+```js
+import { isObject } from "@vue/share";
+import { mutableHandlers } from "./baseHandlers";
+import { ReactiveFlags } from "./constants";
+
+export interface Target {
+  [ReactiveFlags.SKIP]?: boolean
+  [ReactiveFlags.IS_REACTIVE]?: boolean
+  [ReactiveFlags.IS_READONLY]?: boolean
+  [ReactiveFlags.IS_SHALLOW]?: boolean
+  [ReactiveFlags.RAW]?: any
+}
+
+export const isReadonly = (value) => !!(value && value[ReactiveFlags.IS_READONLY])
+export const isReactive = (value) => !!(value && value[ReactiveFlags.IS_REACTIVE])
+
+export const reactiveMap: WeakMap<Target, any> = new WeakMap<Target, any>()
+
+export function reactive(target: object) {
+  // 判断是不是已读，因为已读不可以修改
+  if (isReadonly(target)) {
+    return target
+  }
+
+  return createReactiveObject(target, mutableHandlers, reactiveMap)
+}
+
+export function createReactiveObject(target: object, baseHandlers: ProxyHandler<Target>, proxyMap: WeakMap<Target, any>) {
+  // 判断是否是对象
+  if (!isObject(target)) {
+    console.warn('需要传入一个对象');
+    return
+  }
+
+  // 判断是否已经存在
+  const existingProxy = proxyMap.get(target)
+  if (existingProxy) {
+    return existingProxy
+  }
+
+  // 没有就创建
+  const proxy = new Proxy(target, baseHandlers)
+  proxy[ReactiveFlags.IS_REACTIVE] = true
+  proxyMap.set(target, proxy)
+  return proxy
+}
+```
+
+- `createReactiveObject`函数是用来创建`Proxy`对象的
+
+```js
+import { isArray, isObject } from "@vue/share";
+import { reactive, Target } from "./reactive";
+import { isRef } from "./ref";
+
+class BaseReactiveHandler implements ProxyHandler<Target> {
+  constructor(protected readonly _isReadonly = false, protected readonly _isShallow = false) { }
+
+  get(target: Target, key: string | symbol, receiver: object): any {
+    const res = Reflect.get(target, key, receiver)
+    // 是否为只读
+    if (!this._isReadonly) {
+      // 收集依赖
+      console.log('收集依赖');
+    }
+
+    // 是否为浅层
+    if (this._isShallow) return res
+
+    // 是否为ref
+    const targetIsArray = isArray(target)
+    if (isRef(res)) {
+      // * 如果是数组或 Map 这样的原生集合类型时，不会执行解包
+      return targetIsArray ? res : res.value
+    }
+
+    // 是否为对象
+    if (isObject(res)) {
+      return reactive(res)
+    }
+
+    return res
+  }
+}
+class MutableReactiveHandler extends BaseReactiveHandler {
+  set(target: Target, key: string | symbol, value: any, receiver: object): boolean {
+    // 触发依赖
+    console.log('触发依赖', receiver);
+    /**
+     * TODO ?为什么这样会陷入死循环
+     * handler本身就是用来拦截对代理对象（proxy）的操作的，receiver也是一个代理对象，所以会触发set
+        if(value === target[key]) return
+        receiver[key] = value
+     */
+
+    return Reflect.set(target, key, value, receiver)
+  }
+}
+export const mutableHandlers = new MutableReactiveHandler()
+
+```
+- `mutableHandlers`将`get`和`set`重写
 
 ## 源码
 
@@ -449,3 +554,10 @@ return res;
 - 收集依赖并返回值
 - 获取`target`中的`key`值返回给`res`
 - 判断`res`值是否为对象，如果是的话就进行递归处理
+
+## 总结
+
+- `reactive`源码核心
+  - `reactive`函数返回的是一个响应式对象(`createReactiveObject`)
+  - `createReactiveObject`返回的是一个`Proxy`对象
+  - `Proxy`对象中有`get`和`set`方法，在这 2 个方法中收集和触发依赖
