@@ -24,14 +24,15 @@ export default {
           items: [
             { text: 'HTML', link: '/guide/' },
             {
-              text: 'CSS', collapsed: false,
+              text: 'CSS', collapsed: true,
               items: [
                 { text: '盒子模型', link: '/guide/css/' },
                 { text: '对BFC的理解', link: '/guide/css/bfc' },
+                { text: 'Grid布局', link: '/guide/css/grid' },
               ]
             },
             {
-              text: 'JavaScript', collapsed: false,
+              text: 'JavaScript', collapsed: true,
               items: [
                 { text: '基础', link: '/guide/js/' },
                 { text: '事件流', link: '/guide/js/event' },
@@ -44,18 +45,32 @@ export default {
               ]
             },
             {
-              text: 'TypeScript', collapsed: false,
+              text: 'TypeScript', collapsed: true,
               items: [
                 { text: 'keyof', link: '/guide/typescript/keyof' },
               ]
             },
-            { text: '工程化', link: '/guide/engineering' },
+            { text: '工程化',collapsed:true,items:[
+              {text:"git",link:'/guide/engineering/git'}
+            ] },
             { text: '网络', link: '/guide/network' },
             {
-              text: '工具方法', collapsed: false, items: [
+              text: '工具方法', collapsed: true, items: [
                 { text: '常用方法', link: '/guide/utils/' }
               ]
             },
+            {
+              text:"数据结构与算法",collapsed:true,items:[
+                {text:"数组",link:"/guide/algorithm/array"},
+                {text:"链表",link:"/guide/algorithm/linked"},
+                {text:"栈",link:"/guide/algorithm/stack"},
+                {text:"队列",link:"/guide/algorithm/queue"},
+                {text:"二叉树",collapsed: true, items:[
+                  {text:"基础理论",link:"/guide/algorithm/binaryTree/theory"},
+                ]},
+                
+              ]
+            }
           ]
         }
       ],
@@ -106,7 +121,7 @@ export default {
             {
               text: 'Vue', collapsed: false,
               items: [
-                { text: '对MVVM的理解', link: '/interview/vue/' },
+                { text: '对mvd的理解', link: '/interview/vue/' },
                 { text: '对Vue的理解', link: '/interview/vue/vue' },
                 { text: '对生命周期的理解', link: '/interview/vue/lifecycle' }
               ]
