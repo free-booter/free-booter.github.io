@@ -21,6 +21,7 @@ features:
   - icon: 🎓
     title: 项目疑点
     details: 记录在工作中遇到的问题，以及解决方案
+    link: /resolve
   - icon: 📦
     title: 技术文章
     link: /share/technique/

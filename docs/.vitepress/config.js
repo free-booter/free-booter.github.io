@@ -129,6 +129,15 @@ export default {
 
           ]
         }
+      ],
+      '/resolve': [
+        {
+          items: [
+            {text:'小程序',collapsed: true, items:[
+              {text:'真机测试时，无法显示覆盖在canvas上的图片或其他内容', link:'/resolve/applet/coverImage'}
+            ]}
+          ]
+        }
       ]
     },
     socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
