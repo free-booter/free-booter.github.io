@@ -95,9 +95,40 @@
 
 ## webpack 优化手段
 
-### 代码分离
+### 代码分割
 
 #### 入口起点
+
+- 配置多个`entry`，每个入口都会生成一个`bundle`文件
+- 优点：
+  - **适合多页面应用(MPA)**，不同页面有独立的`JS逻辑`，互不依赖的场景
+  - **优化首屏加载时间**：只需要引入所需要的`bundle`文件即可
+  - **独立缓存机制**：如果某个页面的代码更新了，不会影响其他页面的缓存
+    - 疑问：如果更改了某个页面打包重新打包后，bundle 文件是否会同步更改文件名？如果同步更改了文件名，那意味着是一个新的文件了，那浏览器不是会重新获取资源吗？
+    - 三种生成`hash`机制区别：
+      - `hash`：整个项目的构建 hash，只要项目中任意一个文件变动，所有文件的 hash 都会变。
+        - 一人感冒，全公司打吊瓶
+      - `chunkhash`：根据每个 entry chunk 生成 hash。只有 chunk 内容变了，才会变化。（是根据每个 chunk 的依赖和内容生成的 hash。）
+        - 小组内感冒，小组打吊瓶，其他小组无感
+      - `contenthash`：根据文件内容生成 hash。只有具体文件内容变了，hash 才变，最精细的粒度。（是根据单独文件内容生成的 hash（比如用于 JS、CSS 文件时最好用它）。
+        - 谁感冒谁打，别人不动
+    - **使用`chunkhash`或者`contenthash`**
+
+```js
+ entry: {
+    index:"./src/index.js",
+    main:{
+        import:"./src/main.js",
+    },
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name]_[contenthash:8].js',
+    clean: true
+  },
+```
+
+![alt text](./images/image-3.png)
 
 #### 防止重复
 
