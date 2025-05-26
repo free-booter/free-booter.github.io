@@ -128,8 +128,101 @@
   },
 ```
 
-![alt text](./images/image-3.png)
-
 #### 防止重复
 
+- 配置多个`entry`，例如 `index.js` 和 `about.js` 都引入了` axios`，默认情况下，`Webpack` 会分别将 `axios` 打包进各自的 `bundle` 中。这会导致：
+  - 相同的第三方库被重复打包
+  - 生成的文件体积增大
+  - 页面首次加载时需要多次加载同一资源，影响性能
+
+##### 解决
+
+###### dependOn
+
+- `手动去提取共享模块`，通过将`axios`抽离为一个独立的共享入口，在每个子入口中使用`dependOn`引用它，可以达到以下效果：
+  - `axios`只会被打包一次(共享`bundle`)
+  - `index`和`about`打包后的`bundle`不再包含`axios`代码
+  - 页面只需要加载一次`axios-vendors`，其他入口按需加载，提生整体加载效率
+
+```js
+ entry: {
+    index: {
+      import: "./src/index.js",
+      dependOn: "axios-vendors",
+    },
+    about: {
+      import: "./src/about.js",
+      dependOn: "axios-vendors",
+    },
+    "axios-vendors": ["axios"],
+  },
+```
+
+- 缺点：
+  - 需要手动去管理`共享模块`
+
+###### optimization.splitChunks
+
+- `自动去提取共享模块`，通过配置`splitChunks`可以将第三方依赖提取到`vendors.js`并且也可以将自己定义的公共的方法或者组件提取到一个`common.js`下
+
+```js
+optimization: {
+    splitChunks: {
+      // 默认只分离异步模块，'all' 表示同步 + 异步
+      chunks: "all",
+      // 小于20KB不拆，避免包太碎
+      minSize: 20 * 1024,
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          chunks: "all",
+          priority: -10,
+        },
+        common: {
+          name: "common",
+          minChunks: 2, // 最少需要被2个文件引用
+          chunks: "all",
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+      },
+    },
+  },
+```
+
+- 缺点：
+
+  - 会增加 HTTP 请求数
+    - 拆的越多，`chunk`越多，意味着需要加载的文件增多。
+    - 解决：合理设置 `minSize`、`minChunks`
+  - 公共模块更新带来“缓存污染”
+    - 比如 `common.js` 中某个工具函数更新了，但它被多个页面引用，会导致所有引用页面的缓存都失效。(把频繁变化的代码和公共代码放在了同一个 chunk 里（缺少 cache 分层思维）)
+    - 解决：更细粒度拆包，避免把“非稳定代码”混入大块
+  - 分析、调试难度变高 - 拆包后每个页面依赖更多 `chunk`，调试时需加载多个源文件，增加维护和排查成本。 - 解决：利用 `maxAsyncRequests / maxInitialRequests` 限制并发加载数（控制请求数上限）
+
+**大多数所谓的“缺点”，其实是由于 `不合理的配置` 或 `不理解业务实际情况` 所带来的副作用。**
+
 #### 动态导入
+
+- 可以将文件进行按需引入，类似路由懒加载
+
+```js
+// 创建2个按钮
+const btn1 = document.createElement("button");
+const btn2 = document.createElement("button");
+btn1.innerHTML = "about";
+btn2.innerHTML = "profile";
+document.body.appendChild(btn1);
+document.body.appendChild(btn2);
+
+btn1.onclick = () => {
+  import(/* webpackChunkName: "about" */ "./router/about.js").then((mod) => {});
+};
+
+btn2.onclick = () => {
+  import(/* webpackChunkName: "profile" */ "./router/profile.js").then(
+    (mod) => {}
+  );
+};
+```
