@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: 快速进入
-      link: /guide
+      link: /guide/html/element/
     - theme: alt
       text: 项目地址
       link: /api-examples
@@ -17,7 +17,7 @@ features:
   - icon: 🛠️
     title: 基础知识点
     details: 学习前端的一些基础知识点，建立属于自己的前端知识体系
-    link: /guide
+    link: /guide/html/element/
   - icon: 🎓
     title: 项目疑点
     details: 记录在工作中遇到的问题，以及解决方案
