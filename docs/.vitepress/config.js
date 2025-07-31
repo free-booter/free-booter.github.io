@@ -38,6 +38,15 @@ export default {
                   text: "script标签中defer和async的区别",
                   link: "/guide/html/defer",
                 },
+                {
+                  text: "HTML 中的 data-* 自定义属性",
+                  link: "/guide/html/data",
+                },
+                {
+                  text: "web worker的理解",
+                  link: "/guide/html/worker",
+                },
+               
               ],
             },
             {
@@ -46,7 +55,9 @@ export default {
               items: [
                 { text: "盒子模型", link: "/guide/css/" },
                 { text: "对BFC的理解", link: "/guide/css/bfc" },
+                { text: "flex布局", link: "/guide/css/flex" },
                 { text: "Grid布局", link: "/guide/css/grid" },
+
               ],
             },
             {
