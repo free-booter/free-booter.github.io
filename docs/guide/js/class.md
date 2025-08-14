@@ -10,18 +10,6 @@
 - `ES6`引入了`class`关键词来定义类，写法更清晰、更接近面向对象编程，但实际它背后使用的仍然是原型和构造函数的概念
 - 我们可以将它看成一个语法糖，它的绝大部分功能，`ES5`都可以做到
 - 类必须使用`new`调用，否则会报错
-- `class`没有变量提升
-
-```js
-console.log(Person); // index.html:10 Uncaught ReferenceError: Cannot access 'Person' before initialization
-
-class Person {
-  constructor(name) {
-    this.name = name;
-  }
-}
-```
-
 - 定义类的主要方式
   - 类声明：`class Person{}`
   - 类表达式：
@@ -60,6 +48,30 @@ const Animal = class Dog {
 };
 console.log(Animal.name); // Dog
 ```
+
+#### `class`没有变量提升
+
+```js
+console.log(Person); // index.html:10 Uncaught ReferenceError: Cannot access 'Person' before initialization
+
+class Person {
+  constructor(name) {
+    this.name = name;
+  }
+}
+```
+
+- 如果存在变量提生会发生什么？
+
+```js
+{
+  let Foo = class {};
+  class Bar extends Foo {}
+}
+```
+
+> 在 `Bar` 继承 `Foo` 时，`Foo` 已经被定义了。
+> 如果存在 `class` 的提升，上面代码就会报错，因为 `class` 会被提升到代码头部，而定义 `Foo` 的那一行没有提升，导致 `Bar` 继承 `Foo` 的时候，`Foo` 还没有定义。
 
 ### 1.2 constructor 构造函数的作用
 
@@ -135,14 +147,6 @@ class A {
 A.print();
 ```
 
-### 1.5 类的实例化与 this 指向
-
-- 使用 new 创建实例
-- `this` 指向当前实例
-- `this` 丢失问题引入（为后面做铺垫）
-
----
-
 ## 二、继承机制与原型链解读
 
 ### 2.1 使用 extends 实现类继承
@@ -150,147 +154,216 @@ A.print();
 - 继承语法结构
 - 父类构造函数的执行逻辑
 
+```js
+class Point {
+  #color = "green";
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  sayColor() {
+    console.log(this.#color);
+  }
+}
+class ColorPoint extends Point {}
+// 等同于
+class ColorPoint extends Point {
+  constructor(x, y) {
+    super(x, y); // 调用父类的constructor(x, y)
+  }
+}
+```
+
+- 使用`extends`继承`Point`父类
+- 子类需要调用`super`函数，如果不写`constructor`的话，默认会填充
+
 ### 2.2 super 的两种使用场景（构造器 / 方法中）
 
 - `super()` 调用父类构造器
 - `super.method()` 调用父类方法
 
+```js
+class ColorPoint extends Point {
+  constructor(x, y, color) {
+    super(x, y); // 调用父类的constructor(x, y)
+    this.color = color;
+  }
+
+  toString() {
+    return this.color + " " + super.toString(); // 调用父类的toString()
+  }
+}
+```
+
 ### 2.3 子类构造函数中的注意事项
 
 - `super()` 必须先调用
+  - 因为子类有属于自己的`this`对象，必须先通过父类的构造函数完成塑造，得到与父类同样的实例属性和方法，然后再对其加工,添加子类自己的实例属性和方法。如果不调用 `super()`方法，子类就得不到自己的 `this` 对象
 - 使用箭头函数绑定子类方法中的 this
+  - 类的方法中如果包含了`this`默认指向类的实例，如果将这个方法提取出来单独使用，`this`会指向该方法运行时所在的环境（由于 `class` 内部是严格模式，所以 `this` 实际指向的是`undefined`）
+
+```js
+class Point {
+  #color = "green";
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  sayColor() {
+    console.log(this.#color);
+  }
+}
+class ColorPoint extends Point {
+  constructor(x, y) {
+    super(x, y);
+    this.point = `x:${x}; y:${y}`;
+  }
+  sayPoint() {
+    console.log(`坐标位置：${this.point}`);
+  }
+  // 箭头函数
+  // sayPoint = () => {
+  //     console.log(`坐标位置：${this.point}`);
+  // }
+}
+const cp = new ColorPoint(10, -10);
+cp.sayPoint();
+const fn = cp.sayPoint;
+fn();
+```
 
 ### 2.4 方法重写与多态初探
 
 - 覆盖父类方法
+
+```js
+class Animal {
+  speak() {
+    console.log("Animal speaks");
+  }
+}
+
+class Dog extends Animal {
+  speak() {
+    console.log("Dog barks");
+  }
+}
+
+const d = new Dog();
+d.speak(); // Dog barks
+```
+
 - 多态的实现（同名方法不同表现）
+  - 同一方法名根据参数数量/类型不同执行不同逻辑
+
+```js
+class Animal {
+  speak() {
+    console.log("Animal speaks");
+  }
+}
+
+class Dog extends Animal {
+  speak() {
+    console.log("Dog barks");
+  }
+}
+
+class Cat extends Animal {
+  speak() {
+    console.log("Cat meows");
+  }
+}
+
+function makeItSpeak(animal) {
+  animal.speak(); // 多态调用
+}
+
+makeItSpeak(new Dog()); // Dog barks
+makeItSpeak(new Cat()); // Cat meows
+```
 
 ### 2.5 class 与原型链的关系解析（附图）
 
-- `__proto__` vs `prototype` 的区别
-- class 的本质是函数
-- 原型链结构图解
+#### `__proto__` vs `prototype` 的区别
 
----
+##### `__proto__`
 
-## 三、进阶特性与语法拓展
+> 对象的内部属性，指向创建该对象的构造函数的`prototype`
 
-### 3.1 类字段（Class Fields）语法：实例属性新写法
+- 只有对象才有（函数也是对象，所以函数也有`__proto__`
+- 用于实例与原型之间的链接
+- ES6 推荐使用`Object.getPrototypeOf(obj)`来代替直接访问`__proto__`
 
-- ES2022 支持
-- 不依赖 constructor 初始化属性
+```js
+function Foo() {}
+const obj = new Foo();
 
-### 3.2 私有字段与访问控制（#field）
+console.log(obj.__proto__ === Foo.prototype); // true
+console.log(Object.getPrototypeOf(obj) === Foo.prototype); // true
+```
 
-- `#` 私有属性语法
-- 私有方法定义方式
-- 私有字段访问规则
+##### `prototype`
 
-### 3.3 get/set 访问器属性的使用场景
+> 函数（特别是构造函数）特有的属性，指向一个对象，这个对象就是由该函数创建的实例的原型。
 
-- 语法结构
-- 使用场景（如限制赋值、转换值）
+- 只有函数对象才有
+- 用于定义实例共享的属性和方法
+- 所有通过该构造函数创建的实例，其 `__proto__` 都会指向这个 `prototype` 对象。
 
-### 3.4 this 的丢失与绑定方法
+```js
+function Foo() {}
+Foo.prototype.sayHello = function () {
+  console.log("Hello");
+};
 
-- 常见 this 丢失场景
-- 解决方式：bind / 箭头函数 / class fields 方法
+const obj = new Foo();
+obj.sayHello(); // Hello
+console.log(obj.__proto__ === Foo.prototype); // true
+```
 
-### 3.5 class 中的 Symbol 应用场景（可选）
+#### 二者的关系
 
-- 自定义类内部方法名
-- Symbol 与私有属性的异同
+```js
+obj.__proto__ === Foo.prototype;
+Foo.__proto__ === Function.prototype;
+Function.prototype.__proto__ === Object.prototype;
+Object.prototype.__proto__ === null;
+```
 
----
+### class 的本质是函数
 
-## 四、TypeScript 中的 class 扩展用法
+```js
+class Animal {
+  speak() {
+    console.log("Animal speaks");
+  }
+}
 
-### 4.1 readonly / public / private / protected 修饰符
+class Dog extends Animal {
+  speak() {
+    console.log("Dog barks");
+  }
+}
 
-- 各修饰符作用及访问权限说明
+const d = new Dog();
+console.log(Dog.__proto__ === Animal); // 构造函数继承关系
+console.log(Dog.prototype.__proto__ === Animal.prototype); // 方法继承关系
+console.log(d.__proto__ === Dog.prototype);
+console.log(d.__proto__.__proto__ === Animal.prototype);
+console.log(Animal.__proto__ === Function.prototype);
+console.log(Function.prototype.__proto__ === Object.prototype);
+```
 
-### 4.2 抽象类（abstract）与接口（implements）
+- 子类的原型（`__proto__`）表示构造函数的继承，总是指向父类
+- 子类 `prototype` 属性的**proto**属性，表示方法的继承，总是指向父类的 `prototype` 属性。
 
-- 抽象类定义
-- 接口实现与多接口组合
+#### 总结
 
-### 4.3 泛型类的定义与使用
-
-- 泛型类语法
-- 使用泛型提升类型灵活性
-
-### 4.4 类与类型系统的融合（构造签名、typeof）
-
-- 使用构造函数签名约束类实例
-- `typeof` 操作类本身
-
----
-
-## 五、实际开发中的高级技巧
-
-### 5.1 Mixin 混入模式实现多继承
-
-- JS 不支持多继承的原因
-- mixin 工厂函数模式
-
-### 5.2 装饰器（Decorator）初识与应用场景
-
-- 装饰器的定义方式（Babel / TS）
-- 常见用法：权限校验、日志埋点、缓存注入
-
-### 5.3 Proxy 与 class 配合实现响应式能力
-
-- 使用 Proxy 包装实例
-- 实现数据拦截 / 依赖追踪
-
-### 5.4 用类封装一个业务服务模块（如：HttpService）
-
-- class + fetch 封装请求模块
-- 添加缓存、重试、取消请求等能力
-
----
-
-## 六、常见面试题与易错点汇总
-
-### 6.1 class 与普通构造函数的本质区别
-
-- class 是语法糖
-- constructor 与原型的本质差异
-
-### 6.2 super 的作用与执行顺序问题
-
-- 使用不当导致错误
-- super 与 this 的调用顺序说明
-
-### 6.3 为什么 class 中的 this 会丢失？
-
-- 原因解析
-- 修复方法小结
-
-### 6.4 class 的原型链长什么样？
-
-- 可视化 class 的原型结构（建议配图）
-
-### 6.5 class 是否支持多继承？为什么？
-
-- 不支持多继承
-- 采用 mixin 或组合代替
-
----
-
-## 七、总结与学习建议
-
-### 7.1 class 学习路线推荐
-
-- 从基础到高级的学习路径建议
-
-### 7.2 小项目实战建议：用类封装一个任务调度器
-
-- 任务调度器：添加、延迟执行、优先级队列
-- 项目建议与代码框架
-
-### 7.3 推荐阅读与资料链接
-
-- [MDN class 教程](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Classes)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [ECMAScript Proposal - Class Fields](https://github.com/tc39/proposal-class-fields)
+- **proto** 是对象的隐藏属性，指向创建它的构造函数的 prototype
+- prototype 是构造函数才有的属性，用来定义实例共享的属性和方法
+- class 本质是构造函数的语法糖
+- 继承分为两条链：
+  1. 构造函数的 **proto** 链（构造函数继承）
+  2. prototype 的 **proto** 链（方法继承）
+- 原型链终点：Object.prototype.**proto** === null
